@@ -5,7 +5,7 @@ import { authenticate } from '../Services/authenticate';
 import {toast} from 'react-hot-toast';
 const Login = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState('jp404@yopmail.com');
+    const [email, setEmail] = useState('jaydipsinh.padhiyar@yopmail.com');
     const [password, setPassword] = useState('Abcd@1234');
     const [emailErr, setEmailErr] = useState('');
     const [passwordErr, setPasswordErr] = useState('');

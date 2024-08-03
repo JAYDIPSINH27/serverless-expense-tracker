@@ -25,7 +25,7 @@ const Profile = () => {
             const currentUser = getCurrentUser();
             if (currentUser) {
                 try {
-                    const response = await axios.post('https://nsziq2w394.execute-api.us-east-1.amazonaws.com/prod/user-get', {
+                    const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/user-get`, {
                         userid: currentUser.username
                     });
                     const userData = response.data;
@@ -73,7 +73,7 @@ const Profile = () => {
             userDetails: userDetails
         };
 
-        axios.post('https://nsziq2w394.execute-api.us-east-1.amazonaws.com/prod/newtest', data)
+        axios.post(`${process.env.REACT_APP_BASE_URL}/newtest`, data)
             .then(response => {
                 console.log('Details updated successfully:', response.data);
                 setChanged(!changed);
@@ -100,7 +100,7 @@ const Profile = () => {
         reader.onloadend = async () => {
             const base64Data = reader.result;
             try {
-                const response = await axios.post('https://nsziq2w394.execute-api.us-east-1.amazonaws.com/prod/expense/image-upload', {
+                const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/expense/image-upload`, {
                     image: base64Data
                 });
 
@@ -117,7 +117,7 @@ const Profile = () => {
                     userDetails: { ...userDetails, profilePicture: imageUrl }
                 };
 
-                await axios.post('https://nsziq2w394.execute-api.us-east-1.amazonaws.com/prod/newtest', data)
+                await axios.post(`${process.env.REACT_APP_BASE_URL}/newtest`, data)
                 .then(()=>{
                     toast.success('Details Updated!!')
                 })
