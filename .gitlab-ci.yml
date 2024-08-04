@@ -4,10 +4,10 @@ stages:
 
 publish-frontend:
   when: manual
+  stage: publish
   image: docker:latest
   tags:
     - dalfcs_gitlab_docker_ci
-  stage: publish
   variables:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_HOST: "tcp://docker:2375"
@@ -30,8 +30,8 @@ deploy-frontend:
   before_script:
     - apk update && apk add openssh
   script:
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > /tmp/id_rsa
-    - echo "$SSH_PUBLIC_KEY"
+    - echo $SSH_PRIVATE_KEY | tr -d '\r' > /tmp/id_rsa
+    - echo $SSH_PUBLIC_KEY
     - chmod 600 /tmp/id_rsa
     # - ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
     - ssh -i /tmp/id_rsa ec2-user@$EC2_HOST << 'EOF'
