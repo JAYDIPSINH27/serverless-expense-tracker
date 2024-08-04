@@ -16,6 +16,7 @@ publish-frontend:
    - pwd
    - ls
    - docker --version
+   - unset DOCKER_HOST
    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io
    - docker build -t b00977003/serverless-expense-tracker . -f Dockerfile
    - docker push b00977003/serverless-expense-tracker
