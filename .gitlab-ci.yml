@@ -35,7 +35,7 @@ deploy-frontend:
     - cat /tmp/id_rsa
     - chmod 600 /tmp/id_rsa
     # - ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
-    - ssh -i /tmp/id_rsa ec2-user@$EC2_HOST << 'EOF'
+    - ssh -i /tmp/id_rsac -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
       docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD
       docker pull b00977003/serverless-expense-tracker
       docker stop expense-tracker || true
