@@ -3,13 +3,13 @@ stages:
   - deploy-frontend
 
 publish-frontend:
-  image: docker:latest
+  image: docker:20.10.7
   stage: publish
   variables:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_HOST: tcp://docker:2375/
   services:
-    - docker:dind
+    - docker:20.10.7-dind
   script:
     - cd frontend/
     - pwd
