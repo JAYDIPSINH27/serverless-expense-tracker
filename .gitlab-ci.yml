@@ -33,19 +33,16 @@ deploy-frontend:
     - chmod 600 $SSH_PRIVATE_KEY 
     - ssh-add $SSH_PRIVATE_KEY 
   script:
-
-    # - ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
-    # - ssh -i /tmp/id_rsa -o StrictHostKeyChecking=no ec2-user@$EC2_HOST << 'EOF'
-    #   docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD
-    #   docker pull b00977003/serverless-expense-tracker
-    #   docker stop expense-tracker || true
-    #   docker rm expense-tracker || true
-    #   docker run -d -p 80:80 --name expense-tracker b00977003/serverless-expense-tracker
-    #   EOF
+    - echo "Attempting to SSH into $EC2_HOST"
+    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "echo Connection established"
+    - echo "Pulling Docker image"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker pull b00977003/serverless-expense-tracker"
+    - echo "Stopping any running containers"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker stop expense-tracker || true"
+    - echo "Removing any stopped containers"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker rm expense-tracker || true"
+    - echo "Running the new container"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker run -d -p 80:80 --name expense-tracker b00977003/serverless-expense-tracker"
   only:
     - main
