@@ -6,9 +6,9 @@ stages:
 publish-frontend:
   image: docker:latest
   stage: publish
-  # variables:
-  #  DOCKER_TLS_CERTDIR: ""
-  #  DOCKER_HOST: "tcp://docker:2375"
+  variables:
+   DOCKER_TLS_CERTDIR: ""
+   DOCKER_HOST: "tcp://docker:2375"
   services:
    - docker:dind
   script:
