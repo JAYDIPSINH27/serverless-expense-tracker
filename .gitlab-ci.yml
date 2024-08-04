@@ -32,7 +32,7 @@ deploy-frontend:
   script:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > /tmp/id_rsa
     - chmod 600 /tmp/id_rsa
-    - ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
+    # - ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
     - ssh -i /tmp/id_rsa ec2-user@$EC2_HOST << 'EOF'
       docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD
       docker pull b00977003/serverless-expense-tracker
