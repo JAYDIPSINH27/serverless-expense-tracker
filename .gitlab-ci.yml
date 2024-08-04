@@ -11,14 +11,14 @@ publish-frontend:
   services:
     - name: docker:20.10.7-dind
       alias: docker
+  before_script:
+    - echo "Waiting for Docker to be ready..."
+    - until (curl -s http://docker:2375/_ping && echo "Docker is ready"); do echo "Waiting..."; sleep 5; done
   script:
     - cd frontend/
     - pwd
     - ls
     - docker --version
-    - apk add --no-cache curl
-    - echo "Checking Docker daemon status..."
-    - curl http://docker:2375/_ping
     - docker info
     - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD
     - docker build -t b00977003/serverless-expense-tracker . -f Dockerfile
