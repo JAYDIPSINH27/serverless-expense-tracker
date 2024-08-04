@@ -5,7 +5,7 @@ stages:
 publish-frontend:
   image: docker:latest
   tags:
-    - docker.cs.dal.ca
+    - dalfcs_gitlab_docker_ci
   stage: publish
   variables:
     DOCKER_TLS_CERTDIR: ""
