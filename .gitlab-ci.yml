@@ -4,6 +4,8 @@ stages:
 
 publish-frontend:
   image: docker:latest
+  tags:
+    - docker.cs.dal.ca
   stage: publish
   variables:
     DOCKER_TLS_CERTDIR: ""
