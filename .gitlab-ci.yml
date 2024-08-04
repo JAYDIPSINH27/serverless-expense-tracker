@@ -32,6 +32,7 @@ deploy-frontend:
   script:
     - echo $SSH_PRIVATE_KEY | tr -d '\r' > /tmp/id_rsa
     - echo $SSH_PUBLIC_KEY
+    - cat /tmp/id_rsa
     - chmod 600 /tmp/id_rsa
     # - ssh-keyscan -H $EC2_HOST >> ~/.ssh/known_hosts
     - ssh -i /tmp/id_rsa ec2-user@$EC2_HOST << 'EOF'
