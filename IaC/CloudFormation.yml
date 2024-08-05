@@ -235,11 +235,12 @@ Resources:
           yum install docker -y
           yum install git -y
           service docker start
-          usermod -a -G docker ec2-user
           chmod 666 /var/run/docker.sock
+          cd home/ec2-user
           git clone https://jpadhiyar:B00977003@git.cs.dal.ca/jpadhiyar/serverless-expense-tracker.git
           cd serverless-expense-tracker
           cd frontend
+          pwd
           docker build --build-arg REACT_APP_BASE_URL=https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod \
                       --build-arg REACT_APP_USER_POOL_ID=${CognitoUserPool} \
                       --build-arg REACT_APP_CLIENT_ID=${CognitoUserPoolClient} \
