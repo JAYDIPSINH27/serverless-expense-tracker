@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MyDynamoDBTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties: 
+      TableName: 'expense-tracker-data'
+      AttributeDefinitions: 
+        - AttributeName: 'expenseId'
+          AttributeType: 'S'
+      KeySchema: 
+        - AttributeName: 'expenseId'
+          KeyType: 'HASH'
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  MyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties: 
+      BucketName: 'jaydipsinhbucket'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        IgnorePublicAcls: false
+        BlockPublicPolicy: false
+        RestrictPublicBuckets: false
+
+  PublicAccessBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyS3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource:
+              - !Sub 'arn:aws:s3:::${MyS3Bucket}/*'
+              - !Sub 'arn:aws:s3:::${MyS3Bucket}'

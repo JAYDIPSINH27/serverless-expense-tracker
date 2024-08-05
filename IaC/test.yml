@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MyLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'MyLambdaFunction'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole' # Replace with your IAM Role ARN
+      Code:
+        S3Bucket: 'jaydipsinhbucket' # Replace with your S3 bucket name
+        S3Key: 'expense-crud.zip'  # Replace with the path to your code zip file within the S3 bucket
+      Runtime: 'nodejs18.x' # Replace with your preferred runtime
+      Timeout: 300
+      MemorySize: 128
+
+  MyLambdaFunctionGet:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'MyLambdaFunctionGet'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole' # Replace with your IAM Role ARN
+      Code:
+        S3Bucket: 'jaydipsinhbucket' # Replace with your S3 bucket name
+        S3Key: 'expense-get.zip'  # Replace with the path to your code zip file within the S3 bucket
+      Runtime: 'nodejs18.x' # Replace with your preferred runtime
+      Timeout: 300
+      MemorySize: 128
+
+  ApiGatewayRestApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: 'MyApi'
+
+  ApiGatewayResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'myresource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+
+  ApiGatewayMethodPost:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: 'ApiGatewayResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub:
+            - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+            - LambdaArn:
+                Fn::GetAtt:
+                  - MyLambdaFunction
+                  - Arn
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ApiGatewayMethodGet:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'GET'
+      ResourceId:
+        Ref: 'ApiGatewayResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub:
+            - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+            - LambdaArn:
+                Fn::GetAtt:
+                  - MyLambdaFunctionGet
+                  - Arn
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ApiGatewayMethodOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: 'ApiGatewayResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        Type: 'MOCK'
+        RequestTemplates:
+          application/json: '{statusCode:200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      StageName: 'prod'
+    DependsOn: 
+      - ApiGatewayMethodPost
+      - ApiGatewayMethodGet
+      - ApiGatewayMethodOptions
+
+  LambdaInvokePermissionPost:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'MyLambdaFunction'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub:
+          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/myresource
+          - ApiGatewayRestApi:
+              Ref: 'ApiGatewayRestApi'
+
+  LambdaInvokePermissionGet:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'MyLambdaFunctionGet'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub:
+          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/GET/myresource
+          - ApiGatewayRestApi:
+              Ref: 'ApiGatewayRestApi'

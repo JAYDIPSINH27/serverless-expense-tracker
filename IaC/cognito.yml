@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  CognitoUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties: 
+      UserPoolName: "MyUserPool"
+      LambdaConfig: 
+        PostConfirmation: "arn:aws:lambda:us-east-1:328011242958:function:testregister"
+        PostAuthentication: "arn:aws:lambda:us-east-1:328011242958:function:testlogin"
+
+  CognitoUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      UserPoolId:
+        Ref: "CognitoUserPool"
+      ClientName: "MyUserPoolClient"
+      GenerateSecret: false
+
+  CognitoUserPoolDomain:
+    Type: "AWS::Cognito::UserPoolDomain"
+    Properties:
+      Domain: "expense-users"
+      UserPoolId:
+        Ref: "CognitoUserPool"
+
+Outputs:
+  UserPoolId:
+    Description: "The ID of the Cognito User Pool"
+    Value: 
+      Ref: "CognitoUserPool"
+
+  UserPoolClientId:
+    Description: "The ID of the Cognito User Pool Client"
+    Value: 
+      Ref: "CognitoUserPoolClient"
+
+  UserPoolDomain:
+    Description: "The Cognito User Pool Domain"
+    Value: 
+      Ref: "CognitoUserPoolDomain"
