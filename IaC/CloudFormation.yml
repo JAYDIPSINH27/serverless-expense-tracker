@@ -1,6 +1,51 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create Cognito resources, Lambda functions, API Gateway, and launch an EC2 instance to build and run a Docker container.
+
+Parameters:
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceName:
+    Description: Name for the EC2 instance
+    Type: String
+    Default: MyEC2Instance
+
 Resources:
-# ---------------------------------------------------Expense Post Lambda-----------------------------------------------------------------------------
+  # Cognito Resources
+  CognitoUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties: 
+      UserPoolName: "MyUserPool"
+      LambdaConfig: 
+        PostConfirmation: "arn:aws:lambda:us-east-1:328011242958:function:testregister"
+        PostAuthentication: "arn:aws:lambda:us-east-1:328011242958:function:testlogin"
+
+  CognitoUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      UserPoolId:
+        Ref: "CognitoUserPool"
+      ClientName: "MyUserPoolClient"
+      GenerateSecret: false
+
+  CognitoUserPoolDomain:
+    Type: "AWS::Cognito::UserPoolDomain"
+    Properties:
+      Domain: "expense-users"
+      UserPoolId:
+        Ref: "CognitoUserPool"
+
+  # Lambda Functions
   MyLambdaFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -14,7 +59,6 @@ Resources:
       Timeout: 300
       MemorySize: 128
 
-# ---------------------------------------------------Expense Get Lambda-----------------------------------------------------------------------------
   MyLambdaFunctionGet:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -28,12 +72,12 @@ Resources:
       Timeout: 300
       MemorySize: 128
 
+  # API Gateway
   ApiGatewayRestApi:
     Type: 'AWS::ApiGateway::RestApi'
     Properties:
       Name: 'MyApi'
 
-# ---------------------------------------------------Rest Api Gateway-----------------------------------------------------------------------------
   ApiGatewayResource:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
@@ -41,11 +85,10 @@ Resources:
         Fn::GetAtt:
           - ApiGatewayRestApi
           - RootResourceId
-      PathPart: 'myresource'
+      PathPart: 'expense'
       RestApiId:
         Ref: 'ApiGatewayRestApi'
 
-# ---------------------------------------------------Rest Api Post Method-----------------------------------------------------------------------------
   ApiGatewayMethodPost:
     Type: 'AWS::ApiGateway::Method'
     Properties:
@@ -77,8 +120,6 @@ Resources:
             method.response.header.Access-Control-Allow-Origin: true
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
-
-# ---------------------------------------------------Rest Api Get Method-----------------------------------------------------------------------------
 
   ApiGatewayMethodGet:
     Type: 'AWS::ApiGateway::Method'
@@ -112,7 +153,6 @@ Resources:
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
 
-# ---------------------------------------------------Rest Api Options Method-----------------------------------------------------------------------------
   ApiGatewayMethodOptions:
     Type: 'AWS::ApiGateway::Method'
     Properties:
@@ -159,7 +199,7 @@ Resources:
       Principal: 'apigateway.amazonaws.com'
       SourceArn:
         Fn::Sub:
-          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/myresource
+          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/expense
           - ApiGatewayRestApi:
               Ref: 'ApiGatewayRestApi'
 
@@ -172,6 +212,76 @@ Resources:
       Principal: 'apigateway.amazonaws.com'
       SourceArn:
         Fn::Sub:
-          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/GET/myresource
+          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/GET/expense
           - ApiGatewayRestApi:
               Ref: 'ApiGatewayRestApi'
+
+  # EC2 Instance
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: ami-0ba9883b710b05ac6 # Amazon Linux 2 AMI (Update this based on your region)
+      SecurityGroupIds: [!Ref InstanceSecurityGroup]
+      Tags:
+        - Key: Name
+          Value: !Ref InstanceName
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo su
+          yum update -y
+          yum install docker -y
+          yum install git -y
+          service docker start
+          usermod -a -G docker ec2-user
+          chmod 666 /var/run/docker.sock
+          git clone https://jpadhiyar:B00977003@git.cs.dal.ca/jpadhiyar/serverless-expense-tracker.git
+          cd serverless-expense-tracker
+          cd frontend
+          docker build --build-arg REACT_APP_BASE_URL=https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod \
+                      --build-arg REACT_APP_USER_POOL_ID=${CognitoUserPool} \
+                      --build-arg REACT_APP_CLIENT_ID=${CognitoUserPoolClient} \
+                      -t expense-tracker .
+          docker run -d -p 80:80 expense-tracker
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH and HTTP access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  UserPoolId:
+    Description: "The ID of the Cognito User Pool"
+    Value: 
+      Ref: "CognitoUserPool"
+
+  UserPoolClientId:
+    Description: "The ID of the Cognito User Pool Client"
+    Value: 
+      Ref: "CognitoUserPoolClient"
+
+  UserPoolDomain:
+    Description: "The Cognito User Pool Domain"
+    Value: 
+      Ref: "CognitoUserPoolDomain"
+
+  ApiGatewayUrl:
+    Description: "The URL of the API Gateway deployment"
+    Value:
+      Fn::Sub: "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+
+  EC2PublicURL:
+    Description: "The public URL of the EC2 instance with port 80"
+    Value:
+      Fn::Sub: "http://${MyEC2Instance.PublicDnsName}:80"

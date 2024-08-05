@@ -13,11 +13,15 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Build the React app
-ENV REACT_APP_BASE_URL=https://nsziq2w394.execute-api.us-east-1.amazonaws.com/prod
-ENV REACT_APP_USER_POOL_ID=us-east-1_qHroeVVYU
-ENV REACT_APP_CLIENT_ID=5stunil7s5rutjjl8v8ft1je5o
-RUN npm run build
+# Add build arguments for environment variables
+ARG REACT_APP_BASE_URL
+ARG REACT_APP_USER_POOL_ID
+ARG REACT_APP_CLIENT_ID
+
+# Set environment variables
+ENV REACT_APP_BASE_URL=${REACT_APP_BASE_URL}
+ENV REACT_APP_USER_POOL_ID=${REACT_APP_USER_POOL_ID}
+ENV REACT_APP_CLIENT_ID=${REACT_APP_CLIENT_ID}
 
 # Stage 2: Serve the React app
 FROM nginx:alpine
