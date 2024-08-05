@@ -45,4 +45,4 @@ deploy-frontend:
     - echo "Running the new container"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker run -d -p 80:80 --name expense-tracker b00977003/serverless-expense-tracker"
   only:
-    - main
+    - test
