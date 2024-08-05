@@ -22,6 +22,7 @@ ARG REACT_APP_CLIENT_ID
 ENV REACT_APP_BASE_URL=${REACT_APP_BASE_URL}
 ENV REACT_APP_USER_POOL_ID=${REACT_APP_USER_POOL_ID}
 ENV REACT_APP_CLIENT_ID=${REACT_APP_CLIENT_ID}
+
 RUN npm run build
 
 # Stage 2: Serve the React app
@@ -30,8 +31,7 @@ FROM nginx:alpine
 # Copy the built React app from the build stage
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy custom nginx configuration
-# COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80
 EXPOSE 80
