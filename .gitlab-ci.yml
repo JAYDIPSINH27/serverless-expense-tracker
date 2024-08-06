@@ -1,5 +1,6 @@
 stages:
   - publish
+  - deploy-cloudformation
   - deploy-frontend
 
 publish-frontend:
@@ -22,9 +23,30 @@ publish-frontend:
     - docker build -t b00977003/serverless-expense-tracker . -f Dockerfile
     - docker push b00977003/serverless-expense-tracker
   only:
-    - test
+    - main
+
+deploy-cloudformation:
+  when: manual
+  stage: deploy-cloudformation
+  image: amazon/aws-cli:latest
+  script:
+    - aws cloudformation deploy --template-file cloudformation.yml --stack-name expense-tracker --parameter-overrides InstanceType=t2.micro KeyName=key-pair InstanceName=MyEC2Instance
+    - |
+      echo "Saving environment variables to artifacts"
+      UserPoolId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
+      UserPoolClientId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
+      ApiGatewayUrl=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text)
+      EC2PublicIP=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIP'].OutputValue" --output text)
+      echo "REACT_APP_USER_POOL_ID=$UserPoolId" >> env_variables
+      echo "REACT_APP_CLIENT_ID=$UserPoolClientId" >> env_variables
+      echo "REACT_APP_BASE_URL=$ApiGatewayUrl" >> env_variables
+      echo "EC2_PUBLIC_IP=$EC2PublicIP" >> env_variables
+  artifacts:
+    paths:
+      - env_variables
 
 deploy-frontend:
+  when: manual
   stage: deploy-frontend
   image: alpine:latest
   before_script:
@@ -33,16 +55,21 @@ deploy-frontend:
     - chmod 600 $SSH_PRIVATE_KEY 
     - ssh-add $SSH_PRIVATE_KEY 
   script:
-    - echo "Attempting to SSH into $EC2_HOST"
-    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "echo Connection established"
+    - echo "Attempting to SSH into $EC2_PUBLIC_IP"
+    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "echo Connection established"
     - echo "Pulling Docker image"
-    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
-    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker pull b00977003/serverless-expense-tracker"
+    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
+    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker pull b00977003/serverless-expense-tracker"
     - echo "Stopping any running containers"
-    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker stop expense-tracker || true"
+    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker stop expense-tracker || true"
     - echo "Removing any stopped containers"
-    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker rm expense-tracker || true"
+    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker rm expense-tracker || true"
+    - echo "Fetching environment variables from artifacts"
+    - source env_variables
     - echo "Running the new container"
-    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_HOST "docker run -d -p 80:80 --name expense-tracker b00977003/serverless-expense-tracker"
+    - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker run -d -e REACT_APP_BASE_URL=$REACT_APP_BASE_URL -e REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID -e REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID -p 3000:80 --name expense-tracker b00977003/serverless-expense-tracker"
+  artifacts:
+    paths:
+      - env_variables
   only:
-    - test
+    - main

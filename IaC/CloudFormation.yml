@@ -236,16 +236,9 @@ Resources:
           yum install git -y
           service docker start
           chmod 666 /var/run/docker.sock
-          cd home/ec2-user
-          git clone https://jpadhiyar:B00977003@git.cs.dal.ca/jpadhiyar/serverless-expense-tracker.git
-          cd serverless-expense-tracker
-          cd frontend
-          pwd
-          docker build --build-arg REACT_APP_BASE_URL=https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod \
-                      --build-arg REACT_APP_USER_POOL_ID=${CognitoUserPool} \
-                      --build-arg REACT_APP_CLIENT_ID=${CognitoUserPoolClient} \
-                      -t expense-tracker .
-          docker run -d -p 80:80 expense-tracker
+          docker pull b00977003/serverless-expense-tracker
+          docker run -d -e REACT_APP_BASE_URL=https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod -e REACT_APP_USER_POOL_ID=${CognitoUserPool} -e REACT_APP_CLIENT_ID=${CognitoUserPoolClient} -p 3000:80 --name expense-tracker b00977003/serverless-expense-tracker
+
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -286,3 +279,8 @@ Outputs:
     Description: "The public URL of the EC2 instance with port 80"
     Value:
       Fn::Sub: "http://${MyEC2Instance.PublicDnsName}:80"
+  
+  EC2PublicIP:
+  Description: "The public IP address of the EC2 instance"
+  Value:
+    Fn::GetAtt: [ MyEC2Instance, PublicIp ]

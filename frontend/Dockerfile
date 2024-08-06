@@ -13,28 +13,25 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Add build arguments for environment variables
-ARG REACT_APP_BASE_URL
-ARG REACT_APP_USER_POOL_ID
-ARG REACT_APP_CLIENT_ID
 
 # Set environment variables
 ENV REACT_APP_BASE_URL=${REACT_APP_BASE_URL}
 ENV REACT_APP_USER_POOL_ID=${REACT_APP_USER_POOL_ID}
 ENV REACT_APP_CLIENT_ID=${REACT_APP_CLIENT_ID}
 
-RUN npm run build
+# RUN npm start
+CMD ["npm", "start"]
 
-# Stage 2: Serve the React app
-FROM nginx:alpine
+# # Stage 2: Serve the React app
+# FROM nginx:alpine
 
-# Copy the built React app from the build stage
-COPY --from=build /app/build /usr/share/nginx/html
+# # Copy the built React app from the build stage
+# COPY --from=build /app/build /usr/share/nginx/html
 
-COPY nginx.conf /etc/nginx/nginx.conf
+# COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 80
-EXPOSE 80
+# # Expose port 80
+# EXPOSE 80
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# # Start nginx
+# CMD ["nginx", "-g", "daemon off;"]
