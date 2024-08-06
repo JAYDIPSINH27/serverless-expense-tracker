@@ -30,21 +30,27 @@ deploy-cloudformation:
   stage: deploy-cloudformation
   image: amazon/aws-cli:latest
   script:
+    - echo "Navigating to IaC directory"
     - cd IaC
-    - aws cloudformation deploy --template-file CloudFormation.yml --stack-name expense-tracker --parameter-overrides InstanceType=t2.micro KeyName=key-pair InstanceName=MyEC2Instance
-    - |
-      echo "Saving environment variables to artifacts"
-      UserPoolId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
-      UserPoolClientId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
-      ApiGatewayUrl=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text)
-      EC2PublicIP=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIP'].OutputValue" --output text)
-      echo "REACT_APP_USER_POOL_ID=$UserPoolId" >> env_variables
-      echo "REACT_APP_CLIENT_ID=$UserPoolClientId" >> env_variables
-      echo "REACT_APP_BASE_URL=$ApiGatewayUrl" >> env_variables
-      echo "EC2_PUBLIC_IP=$EC2PublicIP" >> env_variables
+    - echo "Listing files in IaC directory"
+    - ls
+    - echo "Deploying CloudFormation stack"
+    - aws cloudformation deploy --template-file cloudformation.yml --stack-name my-stack --parameter-overrides InstanceType=t2.micro KeyName=my-key InstanceName=MyEC2Instance
+    - echo "Saving environment variables to artifacts"
+    - UserPoolId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
+    - UserPoolClientId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
+    - ApiGatewayUrl=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text)
+    - EC2PublicIP=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIP'].OutputValue" --output text)
+    - echo "REACT_APP_USER_POOL_ID=$UserPoolId" > env_variables
+    - echo "REACT_APP_CLIENT_ID=$UserPoolClientId" >> env_variables
+    - echo "REACT_APP_BASE_URL=$ApiGatewayUrl" >> env_variables
+    - echo "EC2_PUBLIC_IP=$EC2PublicIP" >> env_variables
   artifacts:
     paths:
       - env_variables
+  only:
+    - main
+
 
 deploy-frontend:
   when: manual
