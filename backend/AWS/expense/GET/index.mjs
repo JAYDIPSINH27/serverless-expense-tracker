@@ -2,7 +2,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 // Create an instance of DynamoDB DocumentClient
-const dynamoDbClient = new DynamoDBClient({ region: "your-region" });
+const dynamoDbClient = new DynamoDBClient({ region: "us-east-1" });
 const dynamoDb = DynamoDBDocumentClient.from(dynamoDbClient);
 
 // Specify the name of the DynamoDB table

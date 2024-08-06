@@ -1,7 +1,7 @@
 import { TextractClient, AnalyzeDocumentCommand } from "@aws-sdk/client-textract";
 import axios from "axios";
 
-const textractClient = new TextractClient({ region: "your-region" });
+const textractClient = new TextractClient({ region: "us-east-1" });
 
 export const handler = async (event) => {
   const headers = {

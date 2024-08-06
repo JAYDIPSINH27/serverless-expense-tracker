@@ -1,7 +1,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 // Create a new instance of the AWS S3 service
-const s3Client = new S3Client({ region: "your-region" });
+const s3Client = new S3Client({ region: "us-east-1" });
 
 // Specify the name of the S3 bucket where the images will be uploaded
 const bucketName = 'expense-tracker-images';
