@@ -27,7 +27,7 @@ zip-resources:
       done
   artifacts:
     paths:
-      - *.zip
+      - "*.zip"
 
 pre-deployment:
   when: manual
