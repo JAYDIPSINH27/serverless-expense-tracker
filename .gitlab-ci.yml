@@ -28,7 +28,7 @@ publish-frontend:
 deploy-cloudformation:
   when: manual
   stage: deploy-cloudformation
-  image: amazon/aws-cli:latest
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   script:
     - pwd
     - aws --version
