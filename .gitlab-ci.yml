@@ -9,7 +9,6 @@ cache:
   key: env_variables
   paths:
     - env_variables.env
-    - "**/*.zip"
 
 zip-resources:
   when: manual
@@ -24,14 +23,16 @@ zip-resources:
     paths:
       - "**/*.zip"
   cache:
+    key: zip_files
     paths:
-      - env_variables.env
       - "**/*.zip"
 
 pre-deployment:
   when: manual
   stage: pre-deployment
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  # dependencies:
+  #   - zip-resources
   script:
     - echo "Creating S3 bucket if it doesn't exist"
     - aws s3api create-bucket --bucket expense-tracker-lambda-bucket --region us-east-1 || echo "Bucket already exists"
@@ -39,12 +40,9 @@ pre-deployment:
     - aws s3 rm s3://expense-tracker-lambda-bucket/ --recursive --exclude "*" --include "*.zip"
     - echo "Uploading new zip files to S3 bucket"
     - find . -type f -name "*.zip" -exec echo "Uploading {} to S3" \; -exec aws s3 cp {} s3://expense-tracker-lambda-bucket/ \;
-  artifacts:
-    paths:
-      - "**/*.zip"
   cache:
+    key: zip_files
     paths:
-      - env_variables.env
       - "**/*.zip"
 
 publish-frontend:
@@ -90,9 +88,9 @@ deploy-cloudformation:
     paths:
       - env_variables.env
   cache:
+    key: env_variables
     paths:
       - env_variables.env
-      - "**/*.zip"
   only:
     - main
 
@@ -119,12 +117,9 @@ deploy-frontend:
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker rm expense-tracker || true"
     - echo "Running the new container"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker run -d -e REACT_APP_BASE_URL=$REACT_APP_BASE_URL -e REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID -e REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID -p 80:3000 --name expense-tracker b00977003/serverless-expense-tracker"
-  artifacts:
-    paths:
-      - env_variables.env
   cache:
+    key: env_variables
     paths:
       - env_variables.env
-      - "**/*.zip"
   only:
     - main
