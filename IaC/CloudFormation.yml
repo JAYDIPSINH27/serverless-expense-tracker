@@ -281,6 +281,6 @@ Outputs:
       Fn::Sub: "http://${MyEC2Instance.PublicDnsName}:80"
   
   EC2PublicIP:
-  Description: "The public IP address of the EC2 instance"
-  Value:
-    Fn::GetAtt: [ MyEC2Instance, PublicIp ]
+    Description: "The public IP address of the EC2 instance"
+    Value:
+      Fn::GetAtt: [ MyEC2Instance, PublicIp ]
