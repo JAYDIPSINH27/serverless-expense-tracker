@@ -9,6 +9,7 @@ cache:
   key: env_variables
   paths:
     - env_variables.env
+    - "*.zip"
 
 zip-resources:
   when: manual
