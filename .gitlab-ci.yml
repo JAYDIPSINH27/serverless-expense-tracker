@@ -43,10 +43,14 @@ deploy-cloudformation:
     - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" >> env_variables.env
     - echo "EC2_PUBLIC_IP=$EC2_PUBLIC_IP" >> env_variables.env
     - echo "Setting environment variables in GitLab project"
-    - 'curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" --form "key=REACT_APP_USER_POOL_ID" --form "value=$REACT_APP_USER_POOL_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables"'
-    - 'curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" --form "key=REACT_APP_CLIENT_ID" --form "value=$REACT_APP_CLIENT_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables"'
-    - 'curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" --form "key=REACT_APP_BASE_URL" --form "value=$REACT_APP_BASE_URL" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables"'
-    - 'curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" --form "key=EC2_PUBLIC_IP" --form "value=$EC2_PUBLIC_IP" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables"'
+    - 'curl --request POST --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "key=REACT_APP_USER_POOL_ID" --form "value=$REACT_APP_USER_POOL_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables" || echo "Variable already exists, updating"'
+    - 'curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "value=$REACT_APP_USER_POOL_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables/REACT_APP_USER_POOL_ID"'
+    - 'curl --request POST --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "key=REACT_APP_CLIENT_ID" --form "value=$REACT_APP_CLIENT_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables" || echo "Variable already exists, updating"'
+    - 'curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "value=$REACT_APP_CLIENT_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables/REACT_APP_CLIENT_ID"'
+    - 'curl --request POST --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "key=REACT_APP_BASE_URL" --form "value=$REACT_APP_BASE_URL" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables" || echo "Variable already exists, updating"'
+    - 'curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "value=$REACT_APP_BASE_URL" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables/REACT_APP_BASE_URL"'
+    - 'curl --request POST --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "key=EC2_PUBLIC_IP" --form "value=$EC2_PUBLIC_IP" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables" || echo "Variable already exists, updating"'
+    - 'curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "value=$EC2_PUBLIC_IP" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables/EC2_PUBLIC_IP"'
   artifacts:
     paths:
       - env_variables.env
