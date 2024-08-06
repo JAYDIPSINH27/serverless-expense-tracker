@@ -43,7 +43,7 @@ deploy-cloudformation:
     - export REACT_APP_CLIENT_ID=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
     - export REACT_APP_BASE_URL=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text)
     - export EC2_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIP'].OutputValue" --output text)
-    - echo "REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID" >> env_variables.env
+    - echo "REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID" > env_variables.env
     - echo "REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID" >> env_variables.env
     - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" >> env_variables.env
     - echo "EC2_PUBLIC_IP=$EC2_PUBLIC_IP" >> env_variables.env
