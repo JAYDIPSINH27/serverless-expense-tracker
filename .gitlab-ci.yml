@@ -33,19 +33,18 @@ deploy-cloudformation:
     - pwd
     - aws --version
     - aws cloudformation deploy --template-file ./IaC/CloudFormation.yml --stack-name my-stack --parameter-overrides InstanceType=t2.micro KeyName=key-pair InstanceName=MyEC2Instance --capabilities CAPABILITY_NAMED_IAM
-    - echo "Saving environment variables to artifacts"
-    - UserPoolId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
-    - UserPoolClientId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
-    - ApiGatewayUrl=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text)
-    - EC2PublicIP=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIP'].OutputValue" --output text)
-    - echo "REACT_APP_USER_POOL_ID=$UserPoolId" > env_variables
-    - echo "REACT_APP_CLIENT_ID=$UserPoolClientId" >> env_variables
-    - echo "REACT_APP_BASE_URL=$ApiGatewayUrl" >> env_variables
-    - echo "EC2_PUBLIC_IP=$EC2PublicIP" >> env_variables
+    - echo "Saving environment variables to dotenv file"
+    - export REACT_APP_USER_POOL_ID=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
+    - export REACT_APP_CLIENT_ID=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
+    - export REACT_APP_BASE_URL=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='ApiGatewayUrl'].OutputValue" --output text)
+    - export EC2_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIP'].OutputValue" --output text)
+    - echo "REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID" >> env_variables.env
+    - echo "REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID" >> env_variables.env
+    - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" >> env_variables.env
+    - echo "EC2_PUBLIC_IP=$EC2_PUBLIC_IP" >> env_variables.env
   artifacts:
-    paths:
-      - env_variables
-    expire_in: 1 year
+    reports:
+      dotenv: env_variables.env
   only:
     - main
 
@@ -59,14 +58,7 @@ deploy-frontend:
     - chmod 600 $SSH_PRIVATE_KEY 
     - ssh-add $SSH_PRIVATE_KEY
   script:
-    - echo "Fetching environment variables from artifacts"
-    - cat env_variables
-    - source env_variables
-    - echo "Setting variables from the file"
-    - export REACT_APP_USER_POOL_ID=$(grep REACT_APP_USER_POOL_ID env_variables | cut -d '=' -f2)
-    - export REACT_APP_CLIENT_ID=$(grep REACT_APP_CLIENT_ID env_variables | cut -d '=' -f2)
-    - export REACT_APP_BASE_URL=$(grep REACT_APP_BASE_URL env_variables | cut -d '=' -f2)
-    - export EC2_PUBLIC_IP=$(grep EC2_PUBLIC_IP env_variables | cut -d '=' -f2)
+    - echo "Fetching environment variables from previous job"
     - echo "Attempting to SSH into $EC2_PUBLIC_IP"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "echo Connection established"
     - echo "Pulling Docker image"
@@ -78,11 +70,8 @@ deploy-frontend:
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker rm expense-tracker || true"
     - echo "Running the new container"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker run -d -e REACT_APP_BASE_URL=$REACT_APP_BASE_URL -e REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID -e REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID -p 3000:80 --name expense-tracker b00977003/serverless-expense-tracker"
-  artifacts:
-    paths:
-      - env_variables
-  # needs:
-  #   - job: deploy-cloudformation
-  #     artifacts: true
+  needs:
+    - job: deploy-cloudformation
+      artifacts: true
   only:
     - main
