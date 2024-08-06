@@ -32,8 +32,12 @@ pre-deployment:
   stage: pre-deployment
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   script:
+    - echo "Creating S3 bucket if it doesn't exist"
     - aws s3api create-bucket --bucket expense-tracker-lambda-bucket --region us-east-1 || echo "Bucket already exists"
+    - echo "Removing existing zip files from S3 bucket"
     - aws s3 rm s3://expense-tracker-lambda-bucket/ --recursive --exclude "*" --include "*.zip"
+    - echo "Uploading new zip files to S3 bucket"
+    - find . -type f -name "*.zip" -exec echo "Uploading {} to S3" \; -exec aws s3 cp {} s3://expense-tracker-lambda-bucket/ \;
   artifacts:
     paths:
       - "**/*.zip"
