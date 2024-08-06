@@ -71,8 +71,8 @@ deploy-frontend:
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker rm expense-tracker || true"
     - echo "Running the new container"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker run -d -e REACT_APP_BASE_URL=$REACT_APP_BASE_URL -e REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID -e REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID -p 3000:80 --name expense-tracker b00977003/serverless-expense-tracker"
-  needs:
-    - job: deploy-cloudformation
-      artifacts: true
+  # needs:
+  #   - job: deploy-cloudformation
+  #     artifacts: true
   only:
     - main
