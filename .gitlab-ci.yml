@@ -32,7 +32,7 @@ deploy-cloudformation:
   script:
     - pwd
     - aws --version
-    - aws cloudformation deploy --template-file ./IaC/CloudFormation.yml --stack-name my-stack --parameter-overrides InstanceType=t2.micro KeyName=key-pair InstanceName=MyEC2Instance --capabilities CAPABILITY_NAMED_IAM;
+    - aws cloudformation deploy --template-file ./IaC/CloudFormation.yml --stack-name my-stack --parameter-overrides InstanceType=t2.micro KeyName=key-pair InstanceName=MyEC2Instance --capabilities CAPABILITY_NAMED_IAM
     - echo "Saving environment variables to artifacts"
     - UserPoolId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
     - UserPoolClientId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
@@ -45,9 +45,9 @@ deploy-cloudformation:
   artifacts:
     paths:
       - env_variables
+    expire_in: 1 year
   only:
     - main
-
 
 deploy-frontend:
   when: manual
@@ -57,11 +57,17 @@ deploy-frontend:
     - apk update && apk add openssh-client
     - eval $(ssh-agent -s)
     - chmod 600 $SSH_PRIVATE_KEY 
-    - ssh-add $SSH_PRIVATE_KEY 
+    - ssh-add $SSH_PRIVATE_KEY
   script:
-    - echo "Attempting to SSH into $EC2_PUBLIC_IP"
     - echo "Fetching environment variables from artifacts"
+    - cat env_variables
     - source env_variables
+    - echo "Setting variables from the file"
+    - export REACT_APP_USER_POOL_ID=$(grep REACT_APP_USER_POOL_ID env_variables | cut -d '=' -f2)
+    - export REACT_APP_CLIENT_ID=$(grep REACT_APP_CLIENT_ID env_variables | cut -d '=' -f2)
+    - export REACT_APP_BASE_URL=$(grep REACT_APP_BASE_URL env_variables | cut -d '=' -f2)
+    - export EC2_PUBLIC_IP=$(grep EC2_PUBLIC_IP env_variables | cut -d '=' -f2)
+    - echo "Attempting to SSH into $EC2_PUBLIC_IP"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "echo Connection established"
     - echo "Pulling Docker image"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
@@ -75,5 +81,10 @@ deploy-frontend:
   artifacts:
     paths:
       - env_variables
+  dependencies:
+    - deploy-cloudformation
+  needs:
+    - job: deploy-cloudformation
+      artifacts: true
   only:
     - main
