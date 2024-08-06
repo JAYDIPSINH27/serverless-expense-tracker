@@ -47,10 +47,10 @@ pre-deployment:
       done
   artifacts:
     paths:
-      - env_variables.env
+      - "*.zip"
   cache:
     paths:
-      - env_variables.env
+      - "*.zip"
 
 publish-frontend:
   when: manual
