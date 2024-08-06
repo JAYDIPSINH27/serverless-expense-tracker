@@ -1,13 +1,13 @@
-import AWS from 'aws-sdk';
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 // Create a new instance of the AWS S3 service
-const S3 = new AWS.S3();
+const s3Client = new S3Client({ region: "your-region" });
 
 // Specify the name of the S3 bucket where the images will be uploaded
 const bucketName = 'expense-tracker-images';
 
 // Define the AWS Lambda function handler
-export const handler = async (event, context) => {
+export const handler = async (event) => {
     let statusCode = 200;
 
     // Define the CORS headers to allow cross-origin requests
@@ -39,7 +39,7 @@ export const handler = async (event, context) => {
         };
 
         // Upload the image to the S3 bucket
-        await S3.putObject(params).promise();
+        await s3Client.send(new PutObjectCommand(params));
 
         // Construct the URL for accessing the uploaded image
         const imageUrl = `https://${bucketName}.s3.amazonaws.com/${key}`;

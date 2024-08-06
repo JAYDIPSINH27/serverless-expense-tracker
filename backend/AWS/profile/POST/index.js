@@ -1,8 +1,10 @@
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
 
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
+const client = new DynamoDBClient();
+const dynamoDB = DynamoDBDocumentClient.from(client);
 
-exports.handler = async (event, context, callback) => {
+exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
@@ -15,12 +17,11 @@ exports.handler = async (event, context, callback) => {
 
     // Check if userId or userDetails is missing
     if (!userId || !userDetails) {
-      callback(null, {
+      return {
         statusCode: 400,
         headers: headers,
         body: JSON.stringify({ message: 'Missing userId or userDetails' }),
-      });
-      return;
+      };
     }
 
     // Prepare the parameters for DynamoDB put operation
@@ -39,21 +40,22 @@ exports.handler = async (event, context, callback) => {
     };
 
     // Perform the DynamoDB put operation to add/update the user profile
-    await dynamoDB.put(params).promise();
+    await dynamoDB.send(new PutCommand(params));
 
     // Return a success response
-    callback(null, {
+    return {
       statusCode: 200,
       headers: headers,
       body: JSON.stringify({ message: `User profile for ${userId} added successfully` }),
-    });
+    };
   } catch (error) {
     console.error('Error adding user profile:', error);
+
     // Return an error response
-    callback(null, {
+    return {
       statusCode: 500,
       headers: headers,
-      body: JSON.stringify({ message: 'Internal Server Error' }),
-    });
+      body: JSON.stringify({ message: 'Internal Server Error', error: error.message }),
+    };
   }
 };
