@@ -87,8 +87,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole' 
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'expensePost.zip' 
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'expense-POST.zip' 
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -100,8 +100,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'expenseGet.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'expense-GET.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -113,8 +113,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'userPost.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'user-POST.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -126,8 +126,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'userGet.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'user-GET.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -139,8 +139,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'imagePost.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'image-POST.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -152,8 +152,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'extractPost.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'extract-POST.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -165,8 +165,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'profilePost.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'profile-POST.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -178,8 +178,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'registerNotification.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'extralambda-RegisterNotification.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -191,8 +191,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'loginNotification.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'extralambda-LoginNotification.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
@@ -204,8 +204,8 @@ Resources:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'expenseNotification.zip'  
+        S3Bucket: 'expense-tracker-lambda-bucket'
+        S3Key: 'extralambda-ExpenseNotification.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
