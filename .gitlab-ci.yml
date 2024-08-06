@@ -22,16 +22,22 @@ zip-resources:
     - |
       find backend/AWS -type f -name "package.json" -not -path "*/\.*" | while read file; do
         dir=$(dirname "$file")
+        echo "Processing directory: $dir"
         cd $dir
         npm install
         # Clean unnecessary files from node_modules
         modclean --run
         rm -f package-lock.json # Remove package-lock.json
         zip_name=$(echo $dir | sed 's/.*\///g').zip # Use only the last part of the directory for zip name
+        echo "Creating zip: $zip_name"
         zip -r -9 ../$zip_name index.js package.json node_modules # Use -9 for maximum compression
         cd -
-        zip_size=$(du -h $zip_name | cut -f1)
-        echo "Created $zip_name with size $zip_size"
+        if [ -f "$zip_name" ]; then
+          zip_size=$(du -h $zip_name | cut -f1)
+          echo "Created $zip_name with size $zip_size"
+        else
+          echo "Failed to create $zip_name"
+        fi
       done
   artifacts:
     paths:
