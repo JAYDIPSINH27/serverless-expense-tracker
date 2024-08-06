@@ -35,14 +35,14 @@ const ExpenseForm = ({ open, onSubmit, onClose }) => {
         reader.onloadend = async () => {
             const base64Data = reader.result;
             try {
-                const imageResponse = await axios.post(`${process.env.REACT_APP_BASE_URL}/expense/image-upload`, {
+                const imageResponse = await axios.post(`${process.env.REACT_APP_BASE_URL}/image`, {
                     image: base64Data
                 });
 
                 if (imageResponse.status === 200) {
                     const imageUrl = imageResponse.data.imageUrl;
 
-                    const textractResponse = await axios.post(`${process.env.REACT_APP_BASE_URL}/test`, {
+                    const textractResponse = await axios.post(`${process.env.REACT_APP_BASE_URL}/extract`, {
                         imageUrl: imageUrl
                     });
 

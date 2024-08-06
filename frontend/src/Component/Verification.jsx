@@ -27,7 +27,7 @@ const Verification = () => {
             }
             console.log('Verification result:', result);
 
-            axios.post(`${process.env.REACT_APP_BASE_URL}/user-store`, {
+            axios.post(`${process.env.REACT_APP_BASE_URL}/user`, {
               email: email,
               userid: userid
           }, {

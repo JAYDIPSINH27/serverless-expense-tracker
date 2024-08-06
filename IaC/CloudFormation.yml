@@ -21,14 +21,217 @@ Parameters:
     Default: MyEC2Instance
 
 Resources:
-  # Cognito Resources
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ExpenseDataTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'expense-tracker-data'
+      AttributeDefinitions:
+        - AttributeName: 'expenseId'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'expenseId'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: 'NEW_IMAGE'
+
+  UserDataTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties: 
+      TableName: 'expense-tracker-users'
+      AttributeDefinitions: 
+        - AttributeName: 'userid'
+          AttributeType: 'S'
+      KeySchema: 
+        - AttributeName: 'userid'
+          KeyType: 'HASH'
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  MyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties: 
+      BucketName: 'expense-tracker-images'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        IgnorePublicAcls: false
+        BlockPublicPolicy: false
+        RestrictPublicBuckets: false
+
+  PublicAccessBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref MyS3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource:
+              - !Sub 'arn:aws:s3:::${MyS3Bucket}/*'
+              - !Sub 'arn:aws:s3:::${MyS3Bucket}'
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# expense lambdas
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  ExpensePostLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'ExpensePostLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole' 
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'expensePost.zip' 
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  ExpenseGetLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'ExpenseGetLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'expenseGet.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  UserPostLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'UserPostLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'userPost.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  UserGetLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'UserGetLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'userGet.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  ImagePostLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'ImagePostLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'imagePost.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  ExtractPostLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'ExtractPostLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'extractPost.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  ProfilePostLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'ProfilePostLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'profilePost.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  RegisterNotificationLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'RegisterNotificationLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'registerNotification.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  LoginNotificationLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'LoginNotificationLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'loginNotification.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  ExpenseNotificationLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'ExpenseNotificationLambda'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'expenseNotification.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
   CognitoUserPool:
     Type: "AWS::Cognito::UserPool"
     Properties: 
       UserPoolName: "MyUserPool"
-      LambdaConfig: 
-        PostConfirmation: "arn:aws:lambda:us-east-1:328011242958:function:testregister"
-        PostAuthentication: "arn:aws:lambda:us-east-1:328011242958:function:testlogin"
+      LambdaConfig:
+        PostConfirmation:
+          Fn::GetAtt: [RegisterNotificationLambda, Arn]
+        PostAuthentication:
+          Fn::GetAtt: [LoginNotificationLambda, Arn]
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      EmailVerificationMessage: "Your verification code is {####}"
+      EmailVerificationSubject: "Your verification code"
+      SmsVerificationMessage: "Your verification code is {####}"
 
   CognitoUserPoolClient:
     Type: "AWS::Cognito::UserPoolClient"
@@ -45,40 +248,17 @@ Resources:
       UserPoolId:
         Ref: "CognitoUserPool"
 
-  # Lambda Functions
-  ExpensePostLambda:
-    Type: 'AWS::Lambda::Function'
-    Properties:
-      FunctionName: 'ExpensePostLambda'
-      Handler: 'index.handler'
-      Role: 'arn:aws:iam::328011242958:role/LabRole' 
-      Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'expense-crud.zip' 
-      Runtime: 'nodejs18.x' 
-      Timeout: 300
-      MemorySize: 128
-
-  ExpenseGetLambda:
-    Type: 'AWS::Lambda::Function'
-    Properties:
-      FunctionName: 'ExpenseGetLambda'
-      Handler: 'index.handler'
-      Role: 'arn:aws:iam::328011242958:role/LabRole'
-      Code:
-        S3Bucket: 'jaydipsinhbucket'
-        S3Key: 'expense-get.zip'  
-      Runtime: 'nodejs18.x' 
-      Timeout: 300
-      MemorySize: 128
-
-  # API Gateway
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# API Gateway 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
   ApiGatewayRestApi:
     Type: 'AWS::ApiGateway::RestApi'
     Properties:
       Name: 'MyApi'
-
-  ApiGatewayResource:
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Expense 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+  ExpenseResource:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
       ParentId:
@@ -89,13 +269,13 @@ Resources:
       RestApiId:
         Ref: 'ApiGatewayRestApi'
 
-  ApiGatewayMethodPost:
+  ExpensePostMethod:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       AuthorizationType: 'NONE'
       HttpMethod: 'POST'
       ResourceId:
-        Ref: 'ApiGatewayResource'
+        Ref: 'ExpenseResource'
       RestApiId:
         Ref: 'ApiGatewayRestApi'
       Integration:
@@ -121,13 +301,13 @@ Resources:
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
 
-  ApiGatewayMethodGet:
+  ExpenseGetMethod:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       AuthorizationType: 'NONE'
       HttpMethod: 'GET'
       ResourceId:
-        Ref: 'ApiGatewayResource'
+        Ref: 'ExpenseResource'
       RestApiId:
         Ref: 'ApiGatewayRestApi'
       Integration:
@@ -153,13 +333,13 @@ Resources:
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
 
-  ApiGatewayMethodOptions:
+  ExpenseOptionsMethod:
     Type: 'AWS::ApiGateway::Method'
     Properties:
       AuthorizationType: 'NONE'
       HttpMethod: 'OPTIONS'
       ResourceId:
-        Ref: 'ApiGatewayResource'
+        Ref: 'ExpenseResource'
       RestApiId:
         Ref: 'ApiGatewayRestApi'
       Integration:
@@ -179,6 +359,115 @@ Resources:
             method.response.header.Access-Control-Allow-Headers: true
             method.response.header.Access-Control-Allow-Methods: true
 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# User 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+  UserResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'user'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+
+  UserPostMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: 'UserResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub:
+            - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+            - LambdaArn:
+                Fn::GetAtt:
+                  - UserPostLambda
+                  - Arn
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  UserGetMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'GET'
+      ResourceId:
+        Ref: 'UserResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub:
+            - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+            - LambdaArn:
+                Fn::GetAtt:
+                  - UserGetLambda
+                  - Arn
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  UserOptionsMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: 'UserResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        Type: 'MOCK'
+        RequestTemplates:
+          application/json: '{statusCode:200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+# Deployment
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
   ApiGatewayDeployment:
     Type: 'AWS::ApiGateway::Deployment'
     Properties:
@@ -186,11 +475,18 @@ Resources:
         Ref: 'ApiGatewayRestApi'
       StageName: 'prod'
     DependsOn: 
-      - ApiGatewayMethodPost
-      - ApiGatewayMethodGet
-      - ApiGatewayMethodOptions
+      - ExpensePostMethod
+      - ExpenseGetMethod
+      - ExpenseOptionsMethod
+      - UserPostMethod
+      - UserGetMethod
+      - UserOptionsMethod
 
-  LambdaInvokePermissionPost:
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+# Integrations
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+
+  ExpenseInvokePermissionPost:
     Type: 'AWS::Lambda::Permission'
     Properties:
       FunctionName:
@@ -203,7 +499,7 @@ Resources:
           - ApiGatewayRestApi:
               Ref: 'ApiGatewayRestApi'
 
-  LambdaInvokePermissionGet:
+  ExpenseInvokePermissionGet:
     Type: 'AWS::Lambda::Permission'
     Properties:
       FunctionName:
@@ -216,7 +512,62 @@ Resources:
           - ApiGatewayRestApi:
               Ref: 'ApiGatewayRestApi'
 
-  # EC2 Instance
+  UserInvokePermissionPost:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'UserPostLambda'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub:
+          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/user
+          - ApiGatewayRestApi:
+              Ref: 'ApiGatewayRestApi'
+
+  UserInvokePermissionGet:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'UserGetLambda'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub:
+          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/GET/user
+          - ApiGatewayRestApi:
+              Ref: 'ApiGatewayRestApi'
+  
+  ExpenseNotificationEventSourceMapping:
+    Type: 'AWS::Lambda::EventSourceMapping'
+    Properties:
+      BatchSize: 1
+      Enabled: true
+      EventSourceArn: !GetAtt 
+        - ExpenseDataTable
+        - StreamArn
+      FunctionName: !Ref ExpenseNotificationLambda
+      StartingPosition: "LATEST"
+
+  RegisterNotificationLambdaInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref RegisterNotificationLambda
+      Action: "lambda:InvokeFunction"
+      Principal: "cognito-idp.amazonaws.com"
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  LoginNotificationLambdaInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref LoginNotificationLambda
+      Action: "lambda:InvokeFunction"
+      Principal: "cognito-idp.amazonaws.com"
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+# EC2 Instance
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
   MyEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
