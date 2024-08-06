@@ -22,6 +22,7 @@ zip-resources:
         dir=$(dirname "$file")
         cd $dir
         npm install
+        rm -f package-lock.json # Remove package-lock.json
         cd -
         zip_name=$(echo $dir | sed 's/\//_/g').zip
         zip -r $zip_name $dir
