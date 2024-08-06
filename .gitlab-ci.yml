@@ -26,6 +26,8 @@ zip-resources:
         cd -
         zip_name=$(echo $dir | sed 's/\//_/g').zip
         zip -r $zip_name $dir
+        zip_size=$(du -h $zip_name | cut -f1)
+        echo "Created $zip_name with size $zip_size"
       done
   artifacts:
     paths:
