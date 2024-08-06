@@ -29,7 +29,9 @@ zip-resources:
         rm -f package-lock.json # Remove package-lock.json
         cd -
         zip_name=$(echo $dir | sed 's/\//_/g').zip
-        zip -r -9 $zip_name $dir # Use -9 for maximum compression
+        cd $dir
+        zip -r -9 ../$zip_name index.js package.json node_modules # Use -9 for maximum compression
+        cd -
         zip_size=$(du -h $zip_name | cut -f1)
         echo "Created $zip_name with size $zip_size"
       done
