@@ -18,14 +18,14 @@ zip-resources:
   script:
     - chmod +x IaC/create_zips.sh
     - ./IaC/create_zips.sh
-    - echo "Listing all files in the directory:"
-    - ls -l
+    - echo "Listing all zip files in the project:"
+    - find . -type f -name "*.zip"
   artifacts:
     paths:
-      - "*.zip"
+      - "**/*.zip"
   cache:
     paths:
-      - "*.zip"
+      - "**/*.zip" 
 
 pre-deployment:
   when: manual
