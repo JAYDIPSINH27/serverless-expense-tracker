@@ -16,39 +16,8 @@ zip-resources:
   stage: zip-resources
   image: node:latest
   script:
-    - apt-get update
-    - apt-get install -y zip
-    - npm install -g modclean
-    - |
-      find backend/AWS -type f -name "package.json" -not -path "*/\.*" | while read file; do
-        dir=$(dirname "$file")
-        echo "Processing directory: $dir"
-        cd $dir || { echo "Failed to cd into $dir"; exit 1; }
-        npm install || { echo "npm install failed in $dir"; exit 1; }
-        # Clean unnecessary files from node_modules
-        modclean --run || { echo "modclean failed in $dir"; exit 1; }
-        rm -f package-lock.json # Remove package-lock.json
-        cd - || { echo "Failed to cd back"; exit 1; }
-        zip_name=$(echo $dir | sed 's/.*\///g').zip # Use only the last part of the directory for zip name
-        echo "Creating zip: $zip_name"
-        cd $dir || { echo "Failed to cd into $dir"; exit 1; }
-        index_file=$(ls index.{js,mjs} 2>/dev/null)
-        if [ -n "$index_file" ] && [ -f "package.json" ] && [ -d "node_modules" ]; then
-          zip -r -9 ../../$zip_name $index_file package.json node_modules || { echo "zip command failed in $dir"; exit 1; }
-          cd - || { echo "Failed to cd back"; exit 1; }
-          if [ -f "$zip_name" ]; then
-            zip_size=$(du -h $zip_name | cut -f1)
-            echo "Created $zip_name with size $zip_size"
-          else
-            echo "Failed to create $zip_name"
-            exit 1
-          fi
-        else
-          echo "Required files not found in $dir"
-          exit 1
-        fi
-        cd - || { echo "Failed to cd back"; exit 1; }
-      done
+    - chmod +x IaC/create_zips.sh
+    - ./IaC/create_zips.sh
   artifacts:
     paths:
       - "*.zip"
@@ -59,7 +28,8 @@ pre-deployment:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   script:
     - aws s3api create-bucket --bucket expense-tracker-lambda-bucket --region us-east-1 || echo "Bucket already exists"
-    - for file in *.zip; do aws s3 cp $file s3://expense-tracker-lambda-bucket/; done
+    - aws s3 rm s3://expense-tracker-lambda-bucket/ --recursive --exclude "*" --include "*.zip"
+    - for file in *.zip; do aws s3 cp "$file" s3://expense-tracker-lambda-bucket/; done
   artifacts:
     paths:
       - "*.zip"
