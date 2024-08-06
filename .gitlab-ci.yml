@@ -81,8 +81,6 @@ deploy-frontend:
   artifacts:
     paths:
       - env_variables
-  dependencies:
-    - deploy-cloudformation
   needs:
     - job: deploy-cloudformation
       artifacts: true
