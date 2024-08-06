@@ -42,6 +42,11 @@ deploy-cloudformation:
     - echo "REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID" >> env_variables.env
     - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" >> env_variables.env
     - echo "EC2_PUBLIC_IP=$EC2_PUBLIC_IP" >> env_variables.env
+    - echo "Setting environment variables in GitLab project"
+    - 'curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" --form "key=REACT_APP_USER_POOL_ID" --form "value=$REACT_APP_USER_POOL_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables"'
+    - 'curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" --form "key=REACT_APP_CLIENT_ID" --form "value=$REACT_APP_CLIENT_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables"'
+    - 'curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" --form "key=REACT_APP_BASE_URL" --form "value=$REACT_APP_BASE_URL" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables"'
+    - 'curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" --form "key=EC2_PUBLIC_IP" --form "value=$EC2_PUBLIC_IP" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables"'
   artifacts:
     paths:
       - env_variables.env
@@ -58,9 +63,11 @@ deploy-frontend:
     - chmod 600 $SSH_PRIVATE_KEY 
     - ssh-add $SSH_PRIVATE_KEY
   script:
-    - echo "Fetching environment variables from previous job"
-    - cat env_variables.env
-    - source env_variables.env
+    - echo "Fetching environment variables from GitLab environment"
+    - REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID
+    - REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID
+    - REACT_APP_BASE_URL=$REACT_APP_BASE_URL
+    - EC2_PUBLIC_IP=$EC2_PUBLIC_IP
     - echo "Attempting to SSH into $EC2_PUBLIC_IP"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "echo Connection established"
     - echo "Pulling Docker image"
@@ -75,8 +82,5 @@ deploy-frontend:
   artifacts:
     paths:
       - env_variables.env
-  # needs:
-  #   - job: deploy-cloudformation
-  #     artifacts: true
   only:
     - main
