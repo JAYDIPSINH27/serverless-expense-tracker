@@ -1,6 +1,6 @@
 stages:
   - zip-resources
-  # - pre-deployment
+  - pre-deployment
   - publish
   - deploy-cloudformation
   - deploy-frontend
@@ -36,21 +36,21 @@ zip-resources:
     paths:
       - "*.zip"
 
-# pre-deployment:
-#   when: manual
-#   stage: pre-deployment
-#   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
-#   script:
-#     - aws s3api create-bucket --bucket my-predeployment-bucket --region us-east-1 || echo "Bucket already exists"
-#     - for file in *.zip; do
-#         aws s3 cp $file s3://my-predeployment-bucket/
-#       done
-#   artifacts:
-#     paths:
-#       - env_variables.env
-#   cache:
-#     paths:
-#       - env_variables.env
+pre-deployment:
+  when: manual
+  stage: pre-deployment
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  script:
+    - aws s3api create-bucket --bucket expense-tracker-lambda-bucket --region us-east-1 || echo "Bucket already exists"
+    - for file in *.zip; do
+        aws s3 cp $file s3://expense-tracker-lambda-bucket/
+      done
+  artifacts:
+    paths:
+      - env_variables.env
+  cache:
+    paths:
+      - env_variables.env
 
 publish-frontend:
   when: manual
