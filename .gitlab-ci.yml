@@ -43,9 +43,7 @@ pre-deployment:
   image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   script:
     - aws s3api create-bucket --bucket expense-tracker-lambda-bucket --region us-east-1 || echo "Bucket already exists"
-    - for file in *.zip; do
-        aws s3 cp $file s3://expense-tracker-lambda-bucket/
-      done
+    - for file in *.zip; do aws s3 cp $file s3://expense-tracker-lambda-bucket/; done
   artifacts:
     paths:
       - "*.zip"
