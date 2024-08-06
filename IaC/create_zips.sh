@@ -20,6 +20,7 @@ zip_directory() {
   if [ -f "index.js" ] || [ -f "index.mjs" ]; then
     zip -r -9 "../../$zip_name" index.* package.json node_modules || { echo "zip command failed in $dir"; exit 1; }
     echo "Created $zip_name"
+    ls -l
   else
     echo "Required files not found in $dir"
     exit 1
