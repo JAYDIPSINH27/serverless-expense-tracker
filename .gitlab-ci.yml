@@ -17,15 +17,18 @@ zip-resources:
   script:
     - apt-get update
     - apt-get install -y zip
+    - npm install -g modclean
     - |
       find backend/AWS -type f -name "package.json" -not -path "*/\.*" | while read file; do
         dir=$(dirname "$file")
         cd $dir
         npm install
+        # Clean unnecessary files from node_modules
+        modclean --run
         rm -f package-lock.json # Remove package-lock.json
         cd -
         zip_name=$(echo $dir | sed 's/\//_/g').zip
-        zip -r $zip_name $dir
+        zip -r -9 $zip_name $dir # Use -9 for maximum compression
         zip_size=$(du -h $zip_name | cut -f1)
         echo "Created $zip_name with size $zip_size"
       done
