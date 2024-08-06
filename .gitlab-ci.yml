@@ -30,12 +30,7 @@ deploy-cloudformation:
   stage: deploy-cloudformation
   image: amazon/aws-cli:latest
   script:
-    - echo "Navigating to IaC directory"
-    - cd IaC
-    - echo "Listing files in IaC directory"
-    - ls
-    - echo "Deploying CloudFormation stack"
-    - aws cloudformation deploy --template-file cloudformation.yml --stack-name my-stack --parameter-overrides InstanceType=t2.micro KeyName=my-key InstanceName=MyEC2Instance
+    - aws cloudformation deploy --template-file CloudFormation.yml --stack-name my-stack --parameter-overrides InstanceType=t2.micro KeyName=my-key InstanceName=MyEC2Instance
     - echo "Saving environment variables to artifacts"
     - UserPoolId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
     - UserPoolClientId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)

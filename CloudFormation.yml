@@ -1,0 +1,286 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create Cognito resources, Lambda functions, API Gateway, and launch an EC2 instance to build and run a Docker container.
+
+Parameters:
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  InstanceName:
+    Description: Name for the EC2 instance
+    Type: String
+    Default: MyEC2Instance
+
+Resources:
+  # Cognito Resources
+  CognitoUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties: 
+      UserPoolName: "MyUserPool"
+      LambdaConfig: 
+        PostConfirmation: "arn:aws:lambda:us-east-1:328011242958:function:testregister"
+        PostAuthentication: "arn:aws:lambda:us-east-1:328011242958:function:testlogin"
+
+  CognitoUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      UserPoolId:
+        Ref: "CognitoUserPool"
+      ClientName: "MyUserPoolClient"
+      GenerateSecret: false
+
+  CognitoUserPoolDomain:
+    Type: "AWS::Cognito::UserPoolDomain"
+    Properties:
+      Domain: "expense-users"
+      UserPoolId:
+        Ref: "CognitoUserPool"
+
+  # Lambda Functions
+  MyLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'MyLambdaFunction'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole' 
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'expense-crud.zip' 
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  MyLambdaFunctionGet:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: 'MyLambdaFunctionGet'
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::328011242958:role/LabRole'
+      Code:
+        S3Bucket: 'jaydipsinhbucket'
+        S3Key: 'expense-get.zip'  
+      Runtime: 'nodejs18.x' 
+      Timeout: 300
+      MemorySize: 128
+
+  # API Gateway
+  ApiGatewayRestApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: 'MyApi'
+
+  ApiGatewayResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId:
+        Fn::GetAtt:
+          - ApiGatewayRestApi
+          - RootResourceId
+      PathPart: 'expense'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+
+  ApiGatewayMethodPost:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'POST'
+      ResourceId:
+        Ref: 'ApiGatewayResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub:
+            - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+            - LambdaArn:
+                Fn::GetAtt:
+                  - MyLambdaFunction
+                  - Arn
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ApiGatewayMethodGet:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'GET'
+      ResourceId:
+        Ref: 'ApiGatewayResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        IntegrationHttpMethod: 'POST'
+        Type: 'AWS_PROXY'
+        Uri:
+          Fn::Sub:
+            - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
+            - LambdaArn:
+                Fn::GetAtt:
+                  - MyLambdaFunctionGet
+                  - Arn
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ApiGatewayMethodOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: 'NONE'
+      HttpMethod: 'OPTIONS'
+      ResourceId:
+        Ref: 'ApiGatewayResource'
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      Integration:
+        Type: 'MOCK'
+        RequestTemplates:
+          application/json: '{statusCode:200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST,GET'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+
+  ApiGatewayDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'
+      StageName: 'prod'
+    DependsOn: 
+      - ApiGatewayMethodPost
+      - ApiGatewayMethodGet
+      - ApiGatewayMethodOptions
+
+  LambdaInvokePermissionPost:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'MyLambdaFunction'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub:
+          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/POST/expense
+          - ApiGatewayRestApi:
+              Ref: 'ApiGatewayRestApi'
+
+  LambdaInvokePermissionGet:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName:
+        Ref: 'MyLambdaFunctionGet'
+      Action: 'lambda:InvokeFunction'
+      Principal: 'apigateway.amazonaws.com'
+      SourceArn:
+        Fn::Sub:
+          - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayRestApi}/*/GET/expense
+          - ApiGatewayRestApi:
+              Ref: 'ApiGatewayRestApi'
+
+  # EC2 Instance
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: ami-0ba9883b710b05ac6 # Amazon Linux 2 AMI (Update this based on your region)
+      SecurityGroupIds: [!Ref InstanceSecurityGroup]
+      Tags:
+        - Key: Name
+          Value: !Ref InstanceName
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo su
+          yum update -y
+          yum install docker -y
+          yum install git -y
+          service docker start
+          chmod 666 /var/run/docker.sock
+          docker pull b00977003/serverless-expense-tracker
+          docker run -d -e REACT_APP_BASE_URL=https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod -e REACT_APP_USER_POOL_ID=${CognitoUserPool} -e REACT_APP_CLIENT_ID=${CognitoUserPoolClient} -p 3000:80 --name expense-tracker b00977003/serverless-expense-tracker
+
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH and HTTP access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  UserPoolId:
+    Description: "The ID of the Cognito User Pool"
+    Value: 
+      Ref: "CognitoUserPool"
+
+  UserPoolClientId:
+    Description: "The ID of the Cognito User Pool Client"
+    Value: 
+      Ref: "CognitoUserPoolClient"
+
+  UserPoolDomain:
+    Description: "The Cognito User Pool Domain"
+    Value: 
+      Ref: "CognitoUserPoolDomain"
+
+  ApiGatewayUrl:
+    Description: "The URL of the API Gateway deployment"
+    Value:
+      Fn::Sub: "https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+
+  EC2PublicURL:
+    Description: "The public URL of the EC2 instance with port 80"
+    Value:
+      Fn::Sub: "http://${MyEC2Instance.PublicDnsName}:80"
+  
+  EC2PublicIP:
+  Description: "The public IP address of the EC2 instance"
+  Value:
+    Fn::GetAtt: [ MyEC2Instance, PublicIp ]
