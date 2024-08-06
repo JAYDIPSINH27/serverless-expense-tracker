@@ -27,9 +27,7 @@ zip-resources:
         # Clean unnecessary files from node_modules
         modclean --run
         rm -f package-lock.json # Remove package-lock.json
-        cd -
         zip_name=$(echo $dir | sed 's/.*\///g').zip # Use only the last part of the directory for zip name
-        cd $dir
         zip -r -9 ../$zip_name index.js package.json node_modules # Use -9 for maximum compression
         cd -
         zip_size=$(du -h $zip_name | cut -f1)
