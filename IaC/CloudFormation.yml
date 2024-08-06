@@ -46,10 +46,10 @@ Resources:
         Ref: "CognitoUserPool"
 
   # Lambda Functions
-  MyLambdaFunction:
+  ExpensePostLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: 'MyLambdaFunction'
+      FunctionName: 'ExpensePostLambda'
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole' 
       Code:
@@ -59,10 +59,10 @@ Resources:
       Timeout: 300
       MemorySize: 128
 
-  MyLambdaFunctionGet:
+  ExpenseGetLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: 'MyLambdaFunctionGet'
+      FunctionName: 'ExpenseGetLambda'
       Handler: 'index.handler'
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
@@ -106,7 +106,7 @@ Resources:
             - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
             - LambdaArn:
                 Fn::GetAtt:
-                  - MyLambdaFunction
+                  - ExpensePostLambda
                   - Arn
         IntegrationResponses:
           - StatusCode: 200
@@ -138,7 +138,7 @@ Resources:
             - arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations
             - LambdaArn:
                 Fn::GetAtt:
-                  - MyLambdaFunctionGet
+                  - ExpenseGetLambda
                   - Arn
         IntegrationResponses:
           - StatusCode: 200
@@ -194,7 +194,7 @@ Resources:
     Type: 'AWS::Lambda::Permission'
     Properties:
       FunctionName:
-        Ref: 'MyLambdaFunction'
+        Ref: 'ExpensePostLambda'
       Action: 'lambda:InvokeFunction'
       Principal: 'apigateway.amazonaws.com'
       SourceArn:
@@ -207,7 +207,7 @@ Resources:
     Type: 'AWS::Lambda::Permission'
     Properties:
       FunctionName:
-        Ref: 'MyLambdaFunctionGet'
+        Ref: 'ExpenseGetLambda'
       Action: 'lambda:InvokeFunction'
       Principal: 'apigateway.amazonaws.com'
       SourceArn:
