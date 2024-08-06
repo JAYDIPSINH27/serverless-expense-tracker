@@ -32,7 +32,7 @@ deploy-cloudformation:
   script:
     - pwd
     - aws --version
-    - aws cloudformation deploy --template-file CloudFormation.yml --stack-name my-stack --parameter-overrides InstanceType=t2.micro KeyName=key-pair InstanceName=MyEC2Instance --capabilities CAPABILITY_NAMED_IAM;
+    - aws cloudformation deploy --template-file ./IaC/CloudFormation.yml --stack-name my-stack --parameter-overrides InstanceType=t2.micro KeyName=key-pair InstanceName=MyEC2Instance --capabilities CAPABILITY_NAMED_IAM;
     - echo "Saving environment variables to artifacts"
     - UserPoolId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" --output text)
     - UserPoolClientId=$(aws cloudformation describe-stacks --stack-name my-stack --query "Stacks[0].Outputs[?OutputKey=='UserPoolClientId'].OutputValue" --output text)
