@@ -60,6 +60,8 @@ deploy-frontend:
     - ssh-add $SSH_PRIVATE_KEY 
   script:
     - echo "Attempting to SSH into $EC2_PUBLIC_IP"
+    - echo "Fetching environment variables from artifacts"
+    - source env_variables
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "echo Connection established"
     - echo "Pulling Docker image"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PWD docker.io"
@@ -68,8 +70,7 @@ deploy-frontend:
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker stop expense-tracker || true"
     - echo "Removing any stopped containers"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker rm expense-tracker || true"
-    - echo "Fetching environment variables from artifacts"
-    - source env_variables
+
     - echo "Running the new container"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker run -d -e REACT_APP_BASE_URL=$REACT_APP_BASE_URL -e REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID -e REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID -p 3000:80 --name expense-tracker b00977003/serverless-expense-tracker"
   artifacts:
