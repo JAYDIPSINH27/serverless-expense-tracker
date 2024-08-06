@@ -3,6 +3,11 @@ stages:
   - deploy-cloudformation
   - deploy-frontend
 
+cache:
+  key: env_variables
+  paths:
+    - env_variables.env
+
 publish-frontend:
   when: manual
   stage: publish
@@ -42,16 +47,10 @@ deploy-cloudformation:
     - echo "REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID" >> env_variables.env
     - echo "REACT_APP_BASE_URL=$REACT_APP_BASE_URL" >> env_variables.env
     - echo "EC2_PUBLIC_IP=$EC2_PUBLIC_IP" >> env_variables.env
-    - echo "Setting environment variables in GitLab project"
-    - 'curl --request POST --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "key=REACT_APP_USER_POOL_ID" --form "value=$REACT_APP_USER_POOL_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables" || echo "Variable already exists, updating"'
-    - 'curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "value=$REACT_APP_USER_POOL_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables/REACT_APP_USER_POOL_ID"'
-    - 'curl --request POST --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "key=REACT_APP_CLIENT_ID" --form "value=$REACT_APP_CLIENT_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables" || echo "Variable already exists, updating"'
-    - 'curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "value=$REACT_APP_CLIENT_ID" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables/REACT_APP_CLIENT_ID"'
-    - 'curl --request POST --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "key=REACT_APP_BASE_URL" --form "value=$REACT_APP_BASE_URL" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables" || echo "Variable already exists, updating"'
-    - 'curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "value=$REACT_APP_BASE_URL" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables/REACT_APP_BASE_URL"'
-    - 'curl --request POST --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "key=EC2_PUBLIC_IP" --form "value=$EC2_PUBLIC_IP" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables" || echo "Variable already exists, updating"'
-    - 'curl --request PUT --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" --form "value=$EC2_PUBLIC_IP" "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/variables/EC2_PUBLIC_IP"'
   artifacts:
+    paths:
+      - env_variables.env
+  cache:
     paths:
       - env_variables.env
   only:
@@ -64,14 +63,11 @@ deploy-frontend:
   before_script:
     - apk update && apk add openssh-client
     - eval $(ssh-agent -s)
-    - chmod 600 $SSH_PRIVATE_KEY 
+    - chmod 600 $SSH_PRIVATE_KEY
     - ssh-add $SSH_PRIVATE_KEY
   script:
-    - echo "Fetching environment variables from GitLab environment"
-    - REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID
-    - REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID
-    - REACT_APP_BASE_URL=$REACT_APP_BASE_URL
-    - EC2_PUBLIC_IP=$EC2_PUBLIC_IP
+    - echo "Fetching environment variables from cache"
+    - if [ -f env_variables.env ]; then source env_variables.env; else echo "No env_variables.env found"; exit 1; fi
     - echo "Attempting to SSH into $EC2_PUBLIC_IP"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "echo Connection established"
     - echo "Pulling Docker image"
@@ -84,6 +80,9 @@ deploy-frontend:
     - echo "Running the new container"
     - ssh -i $SSH_PRIVATE_KEY -o StrictHostKeyChecking=no ec2-user@$EC2_PUBLIC_IP "docker run -d -e REACT_APP_BASE_URL=$REACT_APP_BASE_URL -e REACT_APP_USER_POOL_ID=$REACT_APP_USER_POOL_ID -e REACT_APP_CLIENT_ID=$REACT_APP_CLIENT_ID -p 3000:80 --name expense-tracker b00977003/serverless-expense-tracker"
   artifacts:
+    paths:
+      - env_variables.env
+  cache:
     paths:
       - env_variables.env
   only:
