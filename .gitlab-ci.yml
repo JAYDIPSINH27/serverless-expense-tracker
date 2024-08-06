@@ -25,6 +25,7 @@ zip-resources:
       - "**/*.zip"
   cache:
     paths:
+      - env_variables.env
       - "**/*.zip"
 
 pre-deployment:
@@ -43,6 +44,7 @@ pre-deployment:
       - "**/*.zip"
   cache:
     paths:
+      - env_variables.env
       - "**/*.zip"
 
 publish-frontend:
@@ -90,6 +92,7 @@ deploy-cloudformation:
   cache:
     paths:
       - env_variables.env
+      - "**/*.zip"
   only:
     - main
 
@@ -122,5 +125,6 @@ deploy-frontend:
   cache:
     paths:
       - env_variables.env
+      - "**/*.zip"
   only:
     - main
