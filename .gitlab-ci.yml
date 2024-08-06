@@ -17,12 +17,11 @@ zip-resources:
   script:
     - apt-get update
     - apt-get install -y zip
-    - find backend/AWS -type d -not -path "*/\.*" | while read dir; do
-        if [ -f "$dir/package.json" ]; then
-          cd $dir
-          npm install
-          cd -
-        fi
+    - find backend/AWS -type f -name "package.json" -not -path "*/\.*" | while read file; do
+        dir=$(dirname "$file")
+        cd $dir
+        npm install
+        cd -
         zip_name=$(echo $dir | sed 's/\//_/g').zip
         zip -r $zip_name $dir
       done
