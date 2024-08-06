@@ -87,3 +87,4 @@ deploy-frontend:
       - env_variables.env
   only:
     - main
+    # test
