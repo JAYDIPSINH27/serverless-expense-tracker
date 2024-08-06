@@ -15,7 +15,7 @@ zip-resources:
   stage: zip-resources
   image: node:latest
   script:
-    - apt install zip
+    - apt-get install zip
     - find AWS -type d -not -path "*/\.*" | while read dir; do
         if [ -f "$dir/package.json" ]; then
           cd $dir
