@@ -237,7 +237,7 @@ Resources:
           service docker start
           chmod 666 /var/run/docker.sock
           docker pull b00977003/serverless-expense-tracker
-          docker run -d -e REACT_APP_BASE_URL=https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod -e REACT_APP_USER_POOL_ID=${CognitoUserPool} -e REACT_APP_CLIENT_ID=${CognitoUserPoolClient} -p 3000:80 --name expense-tracker b00977003/serverless-expense-tracker
+          docker run -d -e REACT_APP_BASE_URL=https://${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/prod -e REACT_APP_USER_POOL_ID=${CognitoUserPool} -e REACT_APP_CLIENT_ID=${CognitoUserPoolClient} -p 80:3000 --name expense-tracker b00977003/serverless-expense-tracker
 
 
   InstanceSecurityGroup:
