@@ -25,7 +25,7 @@ const Profile = () => {
             const currentUser = getCurrentUser();
             if (currentUser) {
                 try {
-                    const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/userGet`, {
+                    const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/userget`, {
                         userid: currentUser.username
                     });
                     const userData = response.data;
@@ -93,6 +93,8 @@ const Profile = () => {
         setImagePreview(URL.createObjectURL(file));
     };
 
+    console.log(getCurrentUser())
+
     const handleUploadImage = async () => {
         if (!imageFile) return;
 
@@ -110,6 +112,7 @@ const Profile = () => {
                     ...prevState,
                     profilePicture: imageUrl
                 }));
+                
 
                 // Update user details with new profile picture URL
                 const data = {

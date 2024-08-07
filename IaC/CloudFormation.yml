@@ -230,6 +230,8 @@ Resources:
           Fn::GetAtt: [LoginNotificationLambda, Arn]
       AutoVerifiedAttributes:
         - email
+      UsernameConfiguration:
+        CaseSensitive: false
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -239,7 +241,8 @@ Resources:
           RequireSymbols: true
       EmailVerificationMessage: "Your verification code is {####}"
       EmailVerificationSubject: "Your verification code"
-      SmsVerificationMessage: "Your verification code is {####}"
+      UsernameAttributes:
+        - email
 
   CognitoUserPoolClient:
     Type: "AWS::Cognito::UserPoolClient"
