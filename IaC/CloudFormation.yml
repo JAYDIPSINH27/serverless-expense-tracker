@@ -2,6 +2,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: CloudFormation template to create Cognito resources, Lambda functions, API Gateway, and launch an EC2 instance to build and run a Docker container.
 
+#demo
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
 # Cloud Formation Template to create the following resources:
 # - DynamoDB Tables
@@ -13,7 +14,31 @@ Description: CloudFormation template to create Cognito resources, Lambda functio
 # - Integrations
 # - EC2 Instance
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# API Linking
+# /expense
+# -get
+# -post
 
+# /image
+# -post
+
+# /extract
+# -post
+
+# /user
+# -post
+
+# /userget by id
+# -post
+
+# /profile
+# -post
+
+# Other Linking
+# Cognito with Register and Login Notification
+# DynamoDB with Expense Notification
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Parameters:
   InstanceType:
@@ -96,27 +121,7 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::${MyS3Bucket}/*'
               - !Sub 'arn:aws:s3:::${MyS3Bucket}'
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# API 
-# /expense
-# -get
-# -post
 
-# /image
-# -post
-
-# /extract
-# -post
-
-# /user
-# -post
-
-# /userget by id
-# -post
-
-# /profile
-# -post
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Lambda Functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
