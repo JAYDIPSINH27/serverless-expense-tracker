@@ -25,7 +25,7 @@ const Profile = () => {
             const currentUser = getCurrentUser();
             if (currentUser) {
                 try {
-                    const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/user`, {
+                    const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/userGet`, {
                         userid: currentUser.username
                     });
                     const userData = response.data;
@@ -117,7 +117,7 @@ const Profile = () => {
                     userDetails: { ...userDetails, profilePicture: imageUrl }
                 };
 
-                await axios.post(`${process.env.REACT_APP_BASE_URL}/user`, data)
+                await axios.post(`${process.env.REACT_APP_BASE_URL}/profile`, data)
                 .then(()=>{
                     toast.success('Details Updated!!')
                 })
