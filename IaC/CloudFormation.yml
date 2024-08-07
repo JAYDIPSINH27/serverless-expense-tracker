@@ -1,5 +1,19 @@
+# Author: Jaydipsinh Padhiyar (B00977003)
 AWSTemplateFormatVersion: '2010-09-09'
 Description: CloudFormation template to create Cognito resources, Lambda functions, API Gateway, and launch an EC2 instance to build and run a Docker container.
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+# Cloud Formation Template to create the following resources:
+# - DynamoDB Tables
+# - S3 Bucket
+# - Lambda Functions
+# - Cognito User Pool
+# - API Gateway
+# - Deployment
+# - Integrations
+# - EC2 Instance
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+
 
 Parameters:
   InstanceType:
@@ -82,7 +96,27 @@ Resources:
             Resource:
               - !Sub 'arn:aws:s3:::${MyS3Bucket}/*'
               - !Sub 'arn:aws:s3:::${MyS3Bucket}'
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# API 
+# /expense
+# -get
+# -post
 
+# /image
+# -post
+
+# /extract
+# -post
+
+# /user
+# -post
+
+# /userget by id
+# -post
+
+# /profile
+# -post
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # Lambda Functions
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
