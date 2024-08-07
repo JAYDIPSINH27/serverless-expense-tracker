@@ -159,7 +159,7 @@ Resources:
       Role: 'arn:aws:iam::328011242958:role/LabRole'
       Code:
         S3Bucket: 'expense-tracker-lambda-bucket'
-        S3Key: 'extract-POST.zip'  
+        S3Key: 'extractTotal-POST.zip'  
       Runtime: 'nodejs18.x' 
       Timeout: 300
       MemorySize: 128
