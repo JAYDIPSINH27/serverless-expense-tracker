@@ -1,12 +1,12 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, GetCommand } = require("@aws-sdk/lib-dynamodb");
 
 const client = new DynamoDBClient({});
 const dynamo = DynamoDBDocumentClient.from(client);
 
 const tableName = "expense-tracker-users";
 
-export const handler = async (event, context) => {
+exports.handler = async (event, context) => {
   let body;
   let statusCode = 200;
   const headers = {
