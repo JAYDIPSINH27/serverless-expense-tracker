@@ -1,3 +1,4 @@
+# Author : Jaydipsinh Padhiyar
 stages:
   - zip-resources
   - pre-deployment
